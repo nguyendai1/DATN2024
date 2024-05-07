@@ -1,250 +1,284 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import '../fire_base/auth_service.dart';
+import 'package:flutter_app_car/src/theme/theme.dart';
+
 import 'cart_page.dart';
-import 'delete_product.dart';
 import 'edit_product.dart';
 
 class ProductDetailPage extends StatefulWidget {
-  final Map<dynamic, dynamic> product;
-  const ProductDetailPage({Key? key, required this.product,}) : super(key: key);
+  final String productKey;
+  final bool isAdmin;
+
+  ProductDetailPage({required this.productKey, required this.isAdmin});
 
   @override
-  State<ProductDetailPage> createState() => _ProductDetailPageState();
+  _ProductDetailPageState createState() => _ProductDetailPageState();
 }
 
 class _ProductDetailPageState extends State<ProductDetailPage> {
-  bool isAdmin = false;
-  List<Map<dynamic, dynamic>> cartItems = [];
-  List<Map<dynamic, dynamic>> _products = [];
-  List<Map<dynamic, dynamic>> selectedProducts = [];
+  late DatabaseReference _productsRef;
+  Map<dynamic, dynamic>? productData;
+  List<String>? imageUrls;
 
   @override
   void initState() {
     super.initState();
-    checkUserRole(); // Kiểm tra vai trò của người dùng khi trang được tạo
-    fetchCartItems();
+    _productsRef = FirebaseDatabase.instance.ref().child('products');
+    _loadProductData();
   }
 
-  Future<void> fetchCartItems() async {
-    // Lấy danh sách sản phẩm từ giỏ hàng (hoặc cơ sở dữ liệu khác)
-    // Ví dụ:
-    // cartItems = await CartService().getCartItems();
-  }
+  void _loadProductData() {
+    _productsRef.child(widget.productKey).once().then((DatabaseEvent event) {
+      DataSnapshot snapshot = event.snapshot;
+      if (snapshot.value != null && snapshot.value is Map<dynamic, dynamic>) {
+        Map<dynamic, dynamic> data = snapshot.value as Map<dynamic, dynamic>;
+        setState(() {
+          productData = data;
+          imageUrls = List<String>.from(data['imageUrls'] ?? []);
+        });
 
-  Future<void> checkUserRole() async {
-    // Lấy thông tin về vai trò của người dùng từ AuthService
-    bool userIsAdmin = await AuthService().checkUserRole();
-    setState(() {
-      isAdmin = userIsAdmin;
+        findSamePriceProducts();
+      }
+    }).catchError((error) {
+      print("Error loading product data: $error");
     });
   }
+
+  List<Map<dynamic, dynamic>> samePriceProducts = [];
+
+  Future<void> findSamePriceProducts() async {
+    try {
+      double currentProductPrice = productData!['price'].toDouble(); // Lấy giá sản phẩm hiện tại
+
+      DatabaseReference productRef = FirebaseDatabase.instance.ref().child('products');
+
+      // Lấy snapshot của dữ liệu từ cơ sở dữ liệu Firebase
+      DataSnapshot snapshot = await productRef.once().then((event) => event.snapshot);
+
+      // Lấy giá trị từ snapshot
+      Map<dynamic, dynamic>? products = snapshot.value as Map<dynamic, dynamic>?;
+
+      // Kiểm tra và thêm các sản phẩm có cùng giá vào danh sách samePriceProducts
+      if (products != null) {
+        products.forEach((key, value) {
+          double price = value['price'].toDouble(); // Lấy giá của sản phẩm từ dữ liệu Firebase
+          if (price == currentProductPrice && key != widget.productKey) {
+            setState(() {
+              samePriceProducts.add({...value, 'key': key}); // Lưu cả khóa và giá trị của sản phẩm
+            });
+          }
+        });
+      }
+    } catch (error) {
+      print('Lỗi tìm sản phẩm cùng giá: $error');
+    }
+  }
+
+  Widget buildSamePriceProducts() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10.0),
+          child: Text(
+            'Các sản phẩm cùng giá:',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        ),
+        ListView.builder(
+          shrinkWrap: true,
+          itemCount: samePriceProducts.length,
+          itemBuilder: (context, index) {
+            return ListTile(
+              title: Text(samePriceProducts[index]['name']),
+              subtitle: Text('${samePriceProducts[index]['price']}tr VND'),
+              leading: Image.network(
+                samePriceProducts[index]['imageUrls']?[0] ?? '', // Lấy ảnh đầu tiên trong danh sách ảnh
+                fit: BoxFit.cover,
+                width: 60, // Kích thước của ảnh
+                height: 60,
+              ),
+              onTap: () {
+                // Điều hướng đến trang chi tiết sản phẩm của sản phẩm cùng giá
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProductDetailPage(productKey: samePriceProducts[index]['key'], isAdmin: widget.isAdmin,),
+                  ),
+                );
+              },
+            );
+          },
+        ),
+      ],
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.product['name']),
+        title: Text('Chi tiết sản phẩm', style: bold18White,),
+        backgroundColor: primaryColor,
         actions: [
-          if (isAdmin) // Hiển thị nút chỉnh sửa và xóa chỉ khi isAdmin là true
+          if (widget.isAdmin)
             IconButton(
               onPressed: () {
-                // Thực hiện hành động khi nhấn nút chỉnh sửa
-                _editProduct(widget.product);
+                _editProduct();
               },
               icon: Icon(Icons.edit),
             ),
-          if (isAdmin)
-            IconButton(
-              onPressed: () {
-                // Thực hiện hành động khi nhấn nút xóa
-                _deleteProduct(widget.product);
-              },
-              icon: Icon(Icons.delete),
-            ),
         ],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 20),
-                    if (widget.product['imageUrl'] != null)
-                      Image.network(
-                        widget.product['imageUrl'],
-                        width: MediaQuery.of(context).size.width,
+      body: productData != null
+          ? SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              if (imageUrls != null && imageUrls!.isNotEmpty)
+                SizedBox(
+                  width: double.infinity,
+                  height: 200,
+                  child: PageView.builder(
+                    itemCount: imageUrls!.length,
+                    itemBuilder: (context, index) {
+                      return Image.network(
+                        imageUrls![index],
                         fit: BoxFit.cover,
-                        height: 200,
-                      ),
-                    SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Name: ${widget.product['name']}',
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                          ),
-                          SizedBox(height: 10),
-                          Text(
-                            'Price: \$${widget.product['price'].toStringAsFixed(2)}',
-                            style: TextStyle(fontSize: 18),
-                          ),
-                          SizedBox(height: 10),
-                          Text(
-                            'Color: ${widget.product['color']}',
-                            style: TextStyle(fontSize: 18),
-                          ),
-                          SizedBox(height: 10),
-                          Text(
-                            'Brand: ${widget.product['brand']}',
-                            style: TextStyle(fontSize: 18),
-                          ),
-                          SizedBox(height: 10),
-                          Text(
-                            'Quantity: ${widget.product['quantity']}',
-                            style: TextStyle(fontSize: 18),
-                          ),
-                          SizedBox(height: 10),
-                          Text(
-                            'Status: ${widget.product['status']}',
-                            style: TextStyle(fontSize: 18),
-                          ),
-                          SizedBox(height: 10),
-                          Text(
-                            'Description: ${widget.product['description']}',
-                            style: TextStyle(fontSize: 18),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ),
+              Text('${productData!['name']}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
+              Text('Giá: ${productData!['price']}tr VND', style: TextStyle(fontSize: 18),),
+              Text('Màu sắc: ${productData!['color']}', style: TextStyle(fontSize: 18),),
+              Text('Thương hiệu: ${productData!['brand']}', style: TextStyle(fontSize: 18),),
+              Text('Số lượng: ${productData!['quantity']}', style: TextStyle(fontSize: 18),),
+              Text('Tình trạng: ${productData!['status']}', style: TextStyle(fontSize: 18),),
+              Text('Mô tả: ${productData!['description']}', style: TextStyle(fontSize: 18),),
+              buildSamePriceProducts(),
+            ],
           ),
-          Container(
-            width: MediaQuery.of(context).size.width,
-            alignment: Alignment.bottomCenter,
-            child: ElevatedButton(
-              onPressed: () {
-                _addToCart(widget.product, context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange, // Màu nền của nút
-                minimumSize: Size(300, 50), // Kích thước tối thiểu của nút
-                padding: EdgeInsets.symmetric(vertical: 15), // Khoảng cách nội dung và viền nút
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30), // Độ cong của góc nút
-                ),
-              ),
-              child: Text(
-                'Add to Cart',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white, // Màu chữ của nút
-                ),
-              ),
-            ),
-          ),
-        ],
+        ),
+      )
+          : Center(
+        child: CircularProgressIndicator(),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _addToCart();
+        },
+        child: Icon(Icons.add_shopping_cart),
+        backgroundColor: primaryColor,
+      ),
+      // floatingActionButton: ElevatedButton(
+      //   onPressed: () {
+      //     _addToCart();
+      //   },
+      //   child: Row(
+      //     mainAxisAlignment: MainAxisAlignment.center,
+      //     children: [
+      //       Icon(Icons.add_shopping_cart, color: Colors.white,),
+      //       SizedBox(width: 8),
+      //       Text('Thêm vào giỏ hàng', style: bold18White,),
+      //     ],
+      //   ),
+      //   style: ElevatedButton.styleFrom(
+      //     backgroundColor: primaryColor,
+      //     fixedSize: Size(280, 60),
+      //     alignment: Alignment.center,
+      //   ),
+      // ),
     );
   }
 
-  void _editProduct(Map<dynamic, dynamic> product) {
+  void _editProduct() {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EditProductPage(product: product),
+        builder: (context) => EditProductPage(productKey: widget.productKey),
       ),
     );
   }
 
-  void _deleteProduct(Map<dynamic, dynamic> product) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => DeleteProductPage(product: widget.product),
-        ),
-      );
-  }
-
-  void _addToCart(Map<dynamic, dynamic> product, BuildContext context) async {
+  void _addToCart() {
     FirebaseAuth auth = FirebaseAuth.instance;
     DatabaseReference cartRef = FirebaseDatabase.instance.ref().child('carts').child(auth.currentUser!.uid);
 
     try {
-      int quantity = product['quantity'];
+      if (productData != null) {
+        int quantity = productData!['quantity'];
 
-      if (quantity > 0) {
-        bool isProductExistInCart = false;
-        String? existingProductKey;
+        if (quantity > 0) {
+          bool isProductExistInCart = false;
+          String? existingProductKey;
 
-        DatabaseEvent event = await cartRef.once();
-        DataSnapshot snapshot = event.snapshot;
-        Map<dynamic, dynamic>? cartItems = snapshot.value as Map?;
+          cartRef.once().then((DatabaseEvent event) {
+            DataSnapshot snapshot = event.snapshot;
+            Map<dynamic, dynamic>? cartItems = snapshot.value as Map?;
 
-        if (cartItems != null) {
-          cartItems.forEach((key, value) {
-            if (value['name'] == product['name']) {
-              existingProductKey = key;
-              isProductExistInCart = true;
+            if (cartItems != null) {
+              cartItems.forEach((key, value) {
+                if (value['name'] == productData!['name']) {
+                  existingProductKey = key;
+                  isProductExistInCart = true;
+                }
+              });
             }
-          });
-        }
 
-        if (isProductExistInCart) {
-          // Giảm số lượng sản phẩm trong cơ sở dữ liệu đi 1
-            cartRef.child(existingProductKey!).update({
-            'quantity': cartItems![existingProductKey]['quantity'] + 1,
-          });
+            if (isProductExistInCart) {
+              // Increase the quantity of the existing product in the cart
+              cartRef.child(existingProductKey!).update({
+                'quantity': cartItems![existingProductKey]['quantity'] + 1,
+              });
+            } else {
+              // Add the product to the cart
+              DatabaseReference productRef = cartRef.push();
+              productRef.set({
+                'name': productData!['name'],
+                'price': productData!['price'],
+                'quantity': 1,
+              });
+            }
 
-          // Giảm số lượng sản phẩm trên trang chi tiết đi 1
-          setState(() {
-            widget.product['quantity'] -= 1;
+            // Update the quantity of the product on the product detail page
+            setState(() {
+              productData!['quantity'] -= 1;
+            });
+
+            // Navigate to the cart page
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CartPage(),
+              ),
+            );
           });
         } else {
-          DatabaseReference productRef = cartRef.push();
-          productRef.set({
-            'name': product['name'],
-            'price': product['price'],
-            'quantity': 1,
-          });
+          // Show an alert if the product is out of stock
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Out of Stock'),
+                content: Text('This product is currently out of stock.'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
         }
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CartPage(),
-          ),
-        );
-      } else {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('Out of Stock'),
-              content: Text('This product is currently out of stock.'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text('OK'),
-                ),
-              ],
-            );
-          },
-        );
       }
     } catch (error) {
       print('Error adding product to cart: $error');

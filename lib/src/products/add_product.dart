@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 
+import '../theme/theme.dart';
+
 class AddProductPage extends StatefulWidget {
   const AddProductPage({Key? key}) : super(key: key);
 
@@ -15,8 +17,8 @@ class _AddProductPageState extends State<AddProductPage> {
   final TextEditingController _statusController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _colorController = TextEditingController();
-  final TextEditingController _brandController = TextEditingController(); // New field for brand name
-  final TextEditingController _quantityController = TextEditingController(); // New field for quantity
+  final TextEditingController _brandController = TextEditingController();
+  final TextEditingController _quantityController = TextEditingController();
 
   final DatabaseReference _productRef = FirebaseDatabase.instance.ref().child('products');
   List<Map<dynamic, dynamic>> _products = [];
@@ -25,58 +27,73 @@ class _AddProductPageState extends State<AddProductPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Product'),
+        title: Text('Thêm sản phẩm mới', style: bold18White),
+        backgroundColor: primaryColor,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(labelText: 'Product Name'),
-              ),
-              TextField(
-                controller: _imageUrlController,
-                decoration: InputDecoration(labelText: 'Image URL'),
-              ),
-              TextField(
-                controller: _priceController,
-                decoration: InputDecoration(labelText: 'Price'),
-                keyboardType: TextInputType.number,
-              ),
-              TextField(
-                controller: _statusController,
-                decoration: InputDecoration(labelText: 'Status'),
-              ),
-              TextField(
-                controller: _descriptionController,
-                decoration: InputDecoration(labelText: 'Description'),
-                maxLines: 3,
-              ),
-              TextField(
-                controller: _colorController,
-                decoration: InputDecoration(labelText: 'Color'),
-              ),
-              TextField(
-                controller: _brandController, // New field for brand name
-                decoration: InputDecoration(labelText: 'Brand Name'),
-              ),
-              TextField(
-                controller: _quantityController, // New field for quantity
-                decoration: InputDecoration(labelText: 'Quantity'),
-                keyboardType: TextInputType.number,
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  _addProduct();
-                },
-                child: Text('Save'),
-              ),
-            ],
-          ),
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextFormField(
+              controller: _nameController,
+              decoration: InputDecoration(labelText: 'Tên sản phẩm'),
+            ),
+            SizedBox(height: 16),
+            TextFormField(
+              controller: _imageUrlController,
+              decoration: InputDecoration(labelText: 'ImageUrls'),
+              maxLines: null,
+              minLines: 3,
+            ),
+            SizedBox(height: 16),
+            TextFormField(
+              controller: _priceController,
+              decoration: InputDecoration(labelText: 'Giá'),
+              keyboardType: TextInputType.number,
+            ),
+            SizedBox(height: 16),
+            TextFormField(
+              controller: _statusController,
+              decoration: InputDecoration(labelText: 'Tình trạng'),
+            ),
+            SizedBox(height: 16),
+            TextFormField(
+              controller: _descriptionController,
+              decoration: InputDecoration(labelText: 'Mô tả'),
+              maxLines: 3,
+            ),
+            SizedBox(height: 16),
+            TextFormField(
+              controller: _colorController,
+              decoration: InputDecoration(labelText: 'Màu sắc'),
+            ),
+            SizedBox(height: 16),
+            TextFormField(
+              controller: _brandController,
+              decoration: InputDecoration(labelText: 'Thương hiệu'),
+            ),
+            SizedBox(height: 16),
+            TextFormField(
+              controller: _quantityController,
+              decoration: InputDecoration(labelText: 'Số lượng'),
+              keyboardType: TextInputType.number,
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                _addProduct();
+              },
+              child: Text('Lưu'),
+            ),
+            SizedBox(height: 20),
+          ],
         ),
       ),
     );
@@ -84,29 +101,29 @@ class _AddProductPageState extends State<AddProductPage> {
 
   void _addProduct() {
     String name = _nameController.text.trim();
-    String imageUrl = _imageUrlController.text.trim();
+    List<String> imageUrls = _imageUrlController.text.trim().split(',');
     double price = double.parse(_priceController.text.trim());
     String status = _statusController.text.trim();
     String description = _descriptionController.text.trim();
     String color = _colorController.text.trim();
-    String brand = _brandController.text.trim(); // Retrieve brand name
-    int quantity = int.tryParse(_quantityController.text.trim()) ?? 0; // Retrieve quantity
+    String brand = _brandController.text.trim();
+    int quantity = int.tryParse(_quantityController.text.trim()) ?? 0;
 
     if (name.isNotEmpty &&
-        imageUrl.isNotEmpty &&
+        imageUrls.isNotEmpty &&
         status.isNotEmpty &&
         description.isNotEmpty &&
         color.isNotEmpty &&
         brand.isNotEmpty) {
       Map<String, dynamic> productData = {
         'name': name,
-        'imageUrl': imageUrl,
+        'imageUrls': imageUrls,
         'price': price,
         'status': status,
         'description': description,
         'color': color,
-        'brand': brand, // Add brand name to product data
-        'quantity': quantity, // Add quantity to product data
+        'brand': brand,
+        'quantity': quantity,
       };
 
       _productRef.push().set(productData).then((value) {
@@ -114,14 +131,13 @@ class _AddProductPageState extends State<AddProductPage> {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text('Success'),
-              content: Text('Product added successfully.'),
+              title: Text('Thành công'),
+              content: Text('Thêm sản phẩm thành công.'),
               actions: [
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pop();
                     Navigator.of(context).pop();
-                    fetchProducts();
                   },
                   child: Text('OK'),
                 ),
@@ -130,12 +146,12 @@ class _AddProductPageState extends State<AddProductPage> {
           },
         );
       }).catchError((error) {
-        print("Failed to add product: $error");
+        print("Thêm sản phẩm thất bại: $error");
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Please fill in all fields.'),
+          content: Text('Vui lòng điền đầy đủ thông tin.'),
         ),
       );
     }
@@ -154,7 +170,7 @@ class _AddProductPageState extends State<AddProductPage> {
         });
       }
     }).catchError((error) {
-      print("Error fetching data: $error");
+      print("Lỗi khi lấy dữ liệu: $error");
     });
   }
 

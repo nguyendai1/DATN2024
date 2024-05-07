@@ -16,7 +16,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  var _scaffoldKey = new GlobalKey<ScaffoldState>();
+  var _scaffoldKey = GlobalKey<ScaffoldState>();
   final DatabaseReference _productRef = FirebaseDatabase.instance.ref().child('products');
   List<Map<dynamic, dynamic>> _products = [];
   String _searchKeyword = '';
@@ -44,7 +44,9 @@ class _HomePageState extends State<HomePage> {
           _products.clear();
           Map<dynamic, dynamic> values = snapshot.value as Map<dynamic, dynamic>;
           values.forEach((key, value) {
-            _products.add(value);
+            Map<dynamic, dynamic> product = value;
+            product['key'] = key; // Thêm key của sản phẩm vào Map
+            _products.add(product);
           });
         });
       }
@@ -59,9 +61,10 @@ class _HomePageState extends State<HomePage> {
       key: _scaffoldKey,
       appBar: AppBar(
         title: Text(
-          "Product",
-          style: bold18Black33,
+          "Sản phẩm",
+          style: bold18White,
         ),
+        backgroundColor: primaryColor,
         actions: [
           IconButton(
             onPressed: () {
@@ -80,7 +83,7 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.all(16.0),
                 child: TextField(
                   onChanged: (value) {
                     setState(() {
@@ -88,9 +91,11 @@ class _HomePageState extends State<HomePage> {
                     });
                   },
                   decoration: InputDecoration(
-                    hintText: 'Search products...',
+                    hintText: 'Tìm kiếm sản phẩm...',
                     prefixIcon: Icon(Icons.search),
-                    border: OutlineInputBorder(),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20.0),
+                    ),
                   ),
                 ),
               ),
@@ -145,11 +150,16 @@ class _HomePageState extends State<HomePage> {
                   });
 
                   bool hasImage =
-                      filteredProducts[index]['imageUrl'] != null;
+                      filteredProducts[index]['imageUrls'] != null;
 
                   return GestureDetector(
                     onTap: () {
-                      _showProductDetail(filteredProducts[index]);
+                      final productKey = filteredProducts[index]['key'];
+                      if (productKey != null) {
+                        _showProductDetail(context, productKey);
+                      } else {
+                        print('Product key is null');
+                      }
                     },
                     child: Card(
                       elevation: 3,
@@ -161,7 +171,7 @@ class _HomePageState extends State<HomePage> {
                             height: 110,
                             child: hasImage
                                 ? Image.network(
-                              filteredProducts[index]['imageUrl'],
+                              filteredProducts[index]['imageUrls'][0],
                               fit: BoxFit.cover,
                             )
                                 : Center(child: Text('No Image')),
@@ -179,7 +189,7 @@ class _HomePageState extends State<HomePage> {
                             padding:
                             const EdgeInsets.symmetric(horizontal: 8.0),
                             child: Text(
-                              'Price: \$${filteredProducts[index]['price'].toStringAsFixed(2)}',
+                              'Giá: ${filteredProducts[index]['price'].toStringAsFixed(0)}tr VND',
                               style: TextStyle(color: Colors.grey),
                             ),
                           ),
@@ -202,16 +212,17 @@ class _HomePageState extends State<HomePage> {
           _goToAddProductPage();
         },
         child: Icon(Icons.add),
+        backgroundColor: primaryColor,
       )
           : null,
     );
   }
 
-  void _showProductDetail(Map<dynamic, dynamic> product) {
+  void _showProductDetail(BuildContext context, String productKey) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ProductDetailPage(product: product),
+        builder: (context) => ProductDetailPage(productKey: productKey, isAdmin: isAdmin,),
       ),
     );
   }

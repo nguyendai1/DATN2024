@@ -68,16 +68,16 @@ class FireAuth {
         .createUserWithEmailAndPassword(email: email, password: pass)
         .then((userCredential) {
       String userId = userCredential.user!.uid;
-      _createUser(userId, name, phone, onSuccess, onRegisterError);
+      _createUser(userId, email, name, phone, onSuccess, onRegisterError);
       print(userCredential.user);
     }).catchError((err) {
       _onSignUpErr(err.code, onRegisterError);
     });
   }
 
-  _createUser(String userId, String name, String phone, Function onSuccess,
+  _createUser(String userId,String email, String name, String phone, Function onSuccess,
       Function(String) onRegisterError) {
-    var user = {"name" : name, "phone" : phone};
+    var user = {"email" : email, "name" : name, "phone" : phone};
     var ref = FirebaseDatabase.instance.ref().child("users");
     ref.child(userId).set(user).then((user) {
       //success

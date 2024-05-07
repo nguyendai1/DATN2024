@@ -45,138 +45,53 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profile'),
+        title: Text('Tài khoản',style: bold18White,),
+        backgroundColor: primaryColor,
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Name",
-                      style: bold17Grey,
-                    ),
-                    heightSpace,
-                    Container(
-                      decoration: BoxDecoration(
-                        color: whiteColor,
-                        borderRadius: BorderRadius.circular(10.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: blackColor.withOpacity(0.15),
-                            blurRadius: 6.0,
-                          )
-                        ],
-                      ),
-                      child: TextField(
-                        cursorColor: primaryColor,
-                        controller: _nameController,
-                        keyboardType: TextInputType.name,
-                        style: semibold16Black,
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(
-                              vertical: fixPadding * 1.4, horizontal: fixPadding * 1.5),
-                          hintText: "Enter your name",
-                          hintStyle: semibold16Grey,
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-            SizedBox(height: 16.0),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Email",
-                  style: bold17Grey,
-                ),
-                heightSpace,
-                Container(
-                  decoration: BoxDecoration(
-                    color: whiteColor,
-                    borderRadius: BorderRadius.circular(10.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: blackColor.withOpacity(0.15),
-                        blurRadius: 6.0,
-                      )
-                    ],
-                  ),
-                  child: TextField(
-                    cursorColor: primaryColor,
-                    controller: _emailController,
-                    keyboardType: TextInputType.name,
-                    style: semibold16Black,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(
-                          vertical: fixPadding * 1.4, horizontal: fixPadding * 1.5),
-                      hintText: "Enter your name",
-                      hintStyle: semibold16Grey,
-                    ),
-                  ),
-                )
-              ],
+            TextFormField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                labelText: 'Họ và tên',
+                border: OutlineInputBorder(),
+              ),
             ),
             SizedBox(height: 16.0),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Phone",
-                  style: bold17Grey,
-                ),
-                heightSpace,
-                Container(
-                  decoration: BoxDecoration(
-                    color: whiteColor,
-                    borderRadius: BorderRadius.circular(10.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: blackColor.withOpacity(0.15),
-                        blurRadius: 6.0,
-                      )
-                    ],
-                  ),
-                  child: TextField(
-                    cursorColor: primaryColor,
-                    controller: _phoneController,
-                    keyboardType: TextInputType.name,
-                    style: semibold16Black,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(
-                          vertical: fixPadding * 1.4, horizontal: fixPadding * 1.5),
-                      hintText: "Enter your name",
-                      hintStyle: semibold16Grey,
-                    ),
-                  ),
-                )
-              ],
+            TextFormField(
+              controller: _emailController,
+              decoration: InputDecoration(
+                labelText: 'Email',
+                border: OutlineInputBorder(),
+              ),
             ),
-            Expanded(child: SizedBox()),
-            Container(
-              width: double.infinity,
-              height: 70.0,
-              margin: EdgeInsets.only(bottom: 16.0),
-              child: ElevatedButton(
-                onPressed: updateUserProfile,
-                  style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange, // Màu cam
-                ),
-                child: Text('Update Profile'),
-              )
+            SizedBox(height: 16.0),
+            TextFormField(
+              controller: _phoneController,
+              decoration: InputDecoration(
+                labelText: 'Số điện thoại',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 16.0),
+            ElevatedButton(
+              onPressed: updateUserProfile,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor, // Màu cam
+                textStyle: TextStyle(color: Colors.black),
+                padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20),
+              ),
+              child: Text('Cập nhật', style: bold18White),
             )
           ],
         ),
       ),
     );
   }
+
   void updateUserProfile() {
     User? user = _auth.currentUser;
     if (user != null) {
@@ -185,11 +100,11 @@ class _ProfilePageState extends State<ProfilePage> {
         'phone': _phoneController.text.trim(),
       }).then((_) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Profile updated successfully'),
+          content: Text('Cập nhật hồ sơ thành công'),
         ));
       }).catchError((error) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Failed to update profile: $error'),
+          content: Text('Lỗi: $error'),
         ));
       });
     }

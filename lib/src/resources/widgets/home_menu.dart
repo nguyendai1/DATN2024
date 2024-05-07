@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_car/src/account/account_page.dart';
 
+import '../../orders/order_page.dart';
+import '../../posts/post_page.dart';
 import '../../profile/profile.dart';
 import '../../statistic/statistic_page.dart';
 import '../login_page.dart';
@@ -19,57 +21,66 @@ class _HomeMenuState extends State<HomeMenu> {
     return ListView(
       children: <Widget>[
         ListTile(
-          leading: Image.asset('assets/icons/ic_menu_user.png'),
-          title: TextButton(
-            onPressed: () {
-              Navigator.push(
-                context, MaterialPageRoute(builder: (context) => ProfilePage())
-              );
-            },
-            child: Text(
-            "My Profile",
-            style: TextStyle(fontSize: 18, color: Color(0xff323643)),
-            ),
-          )
-        ),
-        if (widget.isAdmin)
-          ListTile(
-            leading: Image.asset(
-                width: 24,
-                height: 24,
-                'assets/icons/ic_menu_user.png'), // Icon cho nút Thống kê
+            leading: Icon(Icons.account_circle, color: Colors.blue,),
             title: TextButton(
               onPressed: () {
                 Navigator.push(
-                    context, MaterialPageRoute(builder: (context) => AccountPage())
+                    context, MaterialPageRoute(builder: (context) => ProfilePage())
                 );
               },
               child: Text(
-                "Account", // Tiêu đề của nút Thống kê
+                "Tài khoản",
+                style: TextStyle(fontSize: 18, color: Color(0xff323643)),
+              ),
+            )
+        ),
+        if (widget.isAdmin)
+          ListTile(
+            leading: Icon(Icons.supervised_user_circle, color: Colors.blue,),
+            title: TextButton(
+              onPressed: () {
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => RegisteredUsersPage())
+                );
+              },
+              child: Text(
+                "Quản lý tài khoản",
+                style: TextStyle(fontSize: 18, color: Color(0xff323643)),
+              ),
+            ),
+          ),
+        if (widget.isAdmin)
+          ListTile(
+            leading: Icon(Icons.shopping_basket, color: Colors.blue,),
+            title: TextButton(
+              onPressed: () {
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => OrdersFromStatisticsPage())
+                );
+              },
+              child: Text(
+                "Quản lý đơn hàng",
                 style: TextStyle(fontSize: 18, color: Color(0xff323643)),
               ),
             ),
           ),
         ListTile(
-          leading: Image.asset('assets/icons/ic_menu_notify.png'),
-          title: Text(
-            "Notifications",
-            style: TextStyle(fontSize: 18, color: Color(0xff323643)),
-          ),
-        ),
-        ListTile(
-          leading: Image.asset('assets/icons/ic_menu_help.png'),
-          title: Text(
-            "Help & Supports",
-            style: TextStyle(fontSize: 18, color: Color(0xff323643)),
+          leading: Icon(Icons.article_outlined, color: Colors.blue,),
+          title: TextButton(
+            onPressed: () {
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => PostsPage())
+              );
+            },
+            child: Text(
+              "Bài viết",
+              style: TextStyle(fontSize: 18, color: Color(0xff323643)),
+            ),
           ),
         ),
         if (widget.isAdmin)
           ListTile(
-            leading: Image.asset(
-                width: 24,
-                height: 24,
-                'assets/icons/ic_menu_statistic.png'), // Icon cho nút Thống kê
+            leading: Icon(Icons.bar_chart, color: Colors.blue,),
             title: TextButton(
               onPressed: () {
                 Navigator.push(
@@ -77,24 +88,24 @@ class _HomeMenuState extends State<HomeMenu> {
                 );
               },
               child: Text(
-                "Statistic", // Tiêu đề của nút Thống kê
+                "Thống kê",
                 style: TextStyle(fontSize: 18, color: Color(0xff323643)),
               ),
             ),
           ),
         ListTile(
-          leading: Image.asset('assets/icons/ic_menu_logout.png'),
-          title: TextButton(
-            onPressed: () {
-              Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => const LoginPage())
-              );
-            },
-            child: Text(
-              "Logout",
-              style: TextStyle(fontSize: 18, color: Color(0xff323643)),
-          ),
-        )
+            leading: Icon(Icons.logout, color: Colors.blue,),
+            title: TextButton(
+              onPressed: () {
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => const LoginPage())
+                );
+              },
+              child: Text(
+                "Đăng xuất",
+                style: TextStyle(fontSize: 18, color: Color(0xff323643)),
+              ),
+            )
         )
       ],
     );

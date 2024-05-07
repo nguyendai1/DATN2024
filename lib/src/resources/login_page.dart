@@ -93,7 +93,7 @@ class _LoginPageState extends State<LoginPage> {
                       );
                     },
                     child: Text(
-                      "Forgot password?",
+                      "Quên mật khẩu?",
                       style: TextStyle(fontSize: 16, color: Color(0xff606470)),
                     ),
                   ),
@@ -107,7 +107,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: ElevatedButton(
                     onPressed: _onLoginClick,
                     child: Text(
-                      "Log In",
+                      "Đăng nhập",
                       style: TextStyle(color: Colors.white, fontSize: 18),
                     ),
                     style: ButtonStyle(

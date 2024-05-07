@@ -160,7 +160,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     child: ElevatedButton(
                       onPressed: _onSignUpClicked,
                       child: Text(
-                        "Signup",
+                        "Đăng ký",
                         style: TextStyle(color: Colors.white, fontSize: 18),
                       ),
                       style: ButtonStyle(

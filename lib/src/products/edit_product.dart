@@ -1,10 +1,12 @@
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app_car/src/theme/theme.dart';
 
 class EditProductPage extends StatefulWidget {
-  final Map<dynamic, dynamic> product;
+  final String productKey;
 
-  EditProductPage({required this.product});
+  EditProductPage({required this.productKey});
 
   @override
   _EditProductPageState createState() => _EditProductPageState();
@@ -24,64 +26,97 @@ class _EditProductPageState extends State<EditProductPage> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.product['name']);
-    _priceController = TextEditingController(text: widget.product['price'].toString());
-    _colorController = TextEditingController(text: widget.product['color']);
-    _brandController = TextEditingController(text: widget.product['brand']);
-    _quantityController = TextEditingController(text: widget.product['quantity'].toString());
-    _statusController = TextEditingController(text: widget.product['status']);
-    _descriptionController = TextEditingController(text: widget.product['description']);
+    _nameController = TextEditingController();
+    _priceController = TextEditingController();
+    _colorController = TextEditingController();
+    _brandController = TextEditingController();
+    _quantityController = TextEditingController();
+    _statusController = TextEditingController();
+    _descriptionController = TextEditingController();
+
+    _loadProductData(widget.productKey);
+  }
+
+  void _loadProductData(String productKey) {
+    _productsRef.child(productKey).once().then((DatabaseEvent event) {
+      DataSnapshot snapshot = event.snapshot;
+      if (snapshot.value != null) {
+        Map<dynamic, dynamic>? productData = snapshot.value as Map<dynamic, dynamic>?;
+
+        if (productData != null) {
+          setState(() {
+            _nameController.text = productData['name'] ?? '';
+            _priceController.text = productData['price']?.toString() ?? '';
+            _colorController.text = productData['color'] ?? '';
+            _brandController.text = productData['brand'] ?? '';
+            _quantityController.text = productData['quantity']?.toString() ?? '';
+            _statusController.text = productData['status'] ?? '';
+            _descriptionController.text = productData['description'] ?? '';
+          });
+        }
+      }
+    }).catchError((error) {
+      print('Error loading product data: $error');
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Product'),
+        title: Text('Sửa sản phẩm', style: TextStyle(fontSize: 18)),
+        backgroundColor: primaryColor,
       ),
-      body: SingleChildScrollView( // Đặt SingleChildScrollView ở đây
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(labelText: 'Product Name'),
-              ),
-              TextField(
-                controller: _priceController,
-                decoration: InputDecoration(labelText: 'Price'),
-              ),
-              TextField(
-                controller: _colorController,
-                decoration: InputDecoration(labelText: 'Color'),
-              ),
-              TextField(
-                controller: _brandController,
-                decoration: InputDecoration(labelText: 'Brand'),
-              ),
-              TextField(
-                controller: _quantityController,
-                decoration: InputDecoration(labelText: 'Quantity'),
-              ),
-              TextField(
-                controller: _statusController,
-                decoration: InputDecoration(labelText: 'Status'),
-              ),
-              TextField(
-                controller: _descriptionController,
-                decoration: InputDecoration(labelText: 'Description'),
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  _updateProduct();
-                },
-                child: Text('Save'),
-              ),
-            ],
-          ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextFormField(
+              controller: _nameController,
+              decoration: InputDecoration(labelText: 'Tên sản phẩm'),
+            ),
+            SizedBox(height: 10),
+            TextFormField(
+              controller: _priceController,
+              decoration: InputDecoration(labelText: 'Giá'),
+              keyboardType: TextInputType.number,
+            ),
+            SizedBox(height: 10),
+            TextFormField(
+              controller: _colorController,
+              decoration: InputDecoration(labelText: 'Màu sắc'),
+            ),
+            SizedBox(height: 10),
+            TextFormField(
+              controller: _brandController,
+              decoration: InputDecoration(labelText: 'Thương hiệu'),
+            ),
+            SizedBox(height: 10),
+            TextFormField(
+              controller: _quantityController,
+              decoration: InputDecoration(labelText: 'Số lượng'),
+              keyboardType: TextInputType.number,
+            ),
+            SizedBox(height: 10),
+            TextFormField(
+              controller: _statusController,
+              decoration: InputDecoration(labelText: 'Tình trạng'),
+            ),
+            SizedBox(height: 10),
+            TextFormField(
+              controller: _descriptionController,
+              decoration: InputDecoration(labelText: 'Mô tả'),
+              maxLines: 3,
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                _updateProduct();
+              },
+              child: Text('Lưu'),
+            ),
+          ],
         ),
       ),
     );
@@ -89,15 +124,14 @@ class _EditProductPageState extends State<EditProductPage> {
 
   void _updateProduct() {
     String newName = _nameController.text.trim();
-    double newPrice = double.parse(_priceController.text.trim());
+    double newPrice = double.tryParse(_priceController.text.trim()) ?? 0.0;
     String newColor = _colorController.text.trim();
     String newBrand = _brandController.text.trim();
-    int newQuantity = int.parse(_quantityController.text.trim());
+    int newQuantity = int.tryParse(_quantityController.text.trim()) ?? 0;
     String newStatus = _statusController.text.trim();
     String newDescription = _descriptionController.text.trim();
 
-    // Thực hiện cập nhật thông tin sản phẩm lên Firebase
-    _productsRef.child(widget.product['key']).update({
+    _productsRef.child(widget.productKey).update({
       'name': newName,
       'price': newPrice,
       'color': newColor,
@@ -106,10 +140,8 @@ class _EditProductPageState extends State<EditProductPage> {
       'status': newStatus,
       'description': newDescription,
     }).then((_) {
-      // Cập nhật thành công, quay lại trang trước đó
-      Navigator.pop(context as BuildContext);
+      Navigator.pop(context);
     }).catchError((error) {
-      // Xử lý lỗi nếu có
       print('Error updating product: $error');
     });
   }

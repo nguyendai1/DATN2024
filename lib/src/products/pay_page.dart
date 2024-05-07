@@ -31,53 +31,61 @@ class _PaymentPageState extends State<PaymentPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Payment Options'),
+        title: Text('Thanh toán'),
+        backgroundColor: Colors.blue,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(
-              controller: _nameController,
-              decoration: InputDecoration(labelText: 'Name'),
-            ),
+            _buildTextField(_nameController, 'Tên'),
             SizedBox(height: 10),
-            TextField(
-              controller: _phoneController,
-              decoration: InputDecoration(labelText: 'Phone Number'),
-            ),
+            _buildTextField(_phoneController, 'Số điện thoại', keyboardType: TextInputType.phone),
             SizedBox(height: 10),
-            TextField(
-              controller: _addressController,
-              decoration: InputDecoration(labelText: 'Delivery Address'),
-            ),
+            _buildTextField(_addressController, 'Địa chỉ giao hàng'),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                _handlePaymentSelection(context, 'VNPay');
-              },
-              child: Text('Pay with VNPay'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                _handlePaymentSelection(context, 'Momo');
-              },
-              child: Text('Pay with Momo'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                _handlePaymentSelection(context, 'Cash on Delivery');
-              },
-              child: Text('Cash on Delivery'),
-            ),
+            _buildPaymentButton('VNPay', 'Thanh toán qua VNPay'),
+            SizedBox(height: 10),
+            _buildPaymentButton('Momo', 'Thanh toán qua Momo'),
+            SizedBox(height: 10),
+            _buildPaymentButton('Thanh toán khi nhận hàng', 'Thanh toán khi nhận hàng'),
           ],
         ),
       ),
     );
   }
 
-  void _handlePaymentSelection(BuildContext context, String paymentMethod) {
+  Widget _buildTextField(TextEditingController controller, String labelText, {TextInputType? keyboardType}) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: labelText,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+      ),
+      keyboardType: keyboardType,
+    );
+  }
+
+  Widget _buildPaymentButton(String paymentMethod, String buttonText) {
+    return ElevatedButton(
+      onPressed: () {
+        _handlePaymentSelection(context, paymentMethod);
+      },
+      style: ElevatedButton.styleFrom(
+        foregroundColor: Colors.white, backgroundColor: Colors.blue,
+        padding: EdgeInsets.all(15.0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+      ),
+      child: Text(buttonText),
+    );
+  }
+
+  Future<void> _handlePaymentSelection(BuildContext context, String paymentMethod) async {
     String name = _nameController.text.trim();
     String phone = _phoneController.text.trim();
     String address = _addressController.text.trim();
@@ -99,42 +107,50 @@ class _PaymentPageState extends State<PaymentPage> {
         'timestamp': transaction.timestamp.toUtc().toString(),
       });
 
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Payment Method Selected'),
-            content: Text('You have selected $paymentMethod. Your order will be delivered to $address.'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
+      _showPaymentSuccessDialog(context, paymentMethod, address);
     } else {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Missing Information'),
-            content: Text('Please fill in all the fields.'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
+      _showMissingInformationDialog(context);
     }
+  }
+
+  void _showPaymentSuccessDialog(BuildContext context, String paymentMethod, String address) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Phương thức thanh toán đã chọn'),
+          content: Text('Bạn đã chọn $paymentMethod. Đơn hàng của bạn sẽ được giao tới $address.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showMissingInformationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Thông tin còn thiếu'),
+          content: Text('Vui lòng điền đầy đủ thông tin.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override

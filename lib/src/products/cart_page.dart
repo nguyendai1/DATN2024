@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_car/src/products/pay_page.dart';
-
 import '../theme/theme.dart';
 
 class CartPage extends StatefulWidget {
@@ -19,28 +18,22 @@ class _CartPageState extends State<CartPage> {
     super.initState();
     FirebaseAuth.instance.authStateChanges().listen((user) {
       if (user != null) {
-        FirebaseAuth auth = FirebaseAuth.instance;
-        // Nếu người dùng đã đăng nhập, tạo tham chiếu đến giỏ hàng của họ
-        _userCartRef =
-            FirebaseDatabase.instance.ref().child('carts').child(auth.currentUser!.uid);
+        String userId = user.uid;
+        _userCartRef = FirebaseDatabase.instance.ref().child('carts').child(userId);
 
-        // Lắng nghe sự thay đổi trong giỏ hàng của người dùng
         _userCartRef.onValue.listen((event) {
           if (this.mounted) {
             if (event.snapshot.value != null) {
-              setState(() {
-                // Ép kiểu event.snapshot.value sang kiểu Map
-                Object? data = event.snapshot.value;
-                if (data is Map) {
-                  // Truy cập thuộc tính values trên kiểu Map
+              var data = event.snapshot.value;
+              if (data is Map<dynamic, dynamic>) {
+                setState(() {
                   cartItems = List<Map<dynamic, dynamic>>.from(data.values);
-                }
-              });
+                });
+              }
             }
           }
         });
       } else {
-        // Nếu người dùng không đăng nhập, xóa giỏ hàng hiện tại
         setState(() {
           cartItems.clear();
         });
@@ -48,7 +41,6 @@ class _CartPageState extends State<CartPage> {
     });
   }
 
-  // Hàm tính tổng tiền của các sản phẩm trong giỏ hàng
   double calculateTotalPrice() {
     double totalPrice = 0;
     for (var item in cartItems) {
@@ -61,7 +53,8 @@ class _CartPageState extends State<CartPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Shopping Cart'),
+        title: Text('Giỏ hàng', style: bold18White),
+        backgroundColor: primaryColor,
       ),
       body: ListView.builder(
         itemCount: cartItems.length,
@@ -69,32 +62,27 @@ class _CartPageState extends State<CartPage> {
           final cartItem = cartItems[index];
           return ListTile(
             title: Text(cartItem['name']),
-            subtitle: Text('\$${cartItem['price'].toString()} x ${cartItem['quantity']}'),
+            subtitle: Text('${cartItem['price'].toString()}tr VND x ${cartItem['quantity']}'),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
                   icon: Icon(Icons.remove),
                   onPressed: () {
-                    // Giảm số lượng sản phẩm
-                    if (cartItem['quantity'] > 1) {
-                      _decreaseQuantity(cartItem);
-                    }
+                    _decreaseQuantity(cartItem['key']);
                   },
                 ),
-                Text(cartItem['quantity'].toString()), // Hiển thị số lượng hiện tại
+                Text(cartItem['quantity'].toString()),
                 IconButton(
                   icon: Icon(Icons.add),
                   onPressed: () {
-                    // Tăng số lượng sản phẩm
-                    _increaseQuantity(cartItem);
+                    _increaseQuantity(cartItem['key']);
                   },
                 ),
                 IconButton(
                   icon: Icon(Icons.delete),
                   onPressed: () {
-                    // Xóa sản phẩm khỏi giỏ hàng của người dùng
-                    _userCartRef.child(cartItem['key']!).remove();
+                    _userCartRef.child(cartItem['key']).remove();
                   },
                 ),
               ],
@@ -106,7 +94,13 @@ class _CartPageState extends State<CartPage> {
         onPressed: () {
           navigateToPaymentPage(context);
         },
-        label: Text('Pay: \$${calculateTotalPrice().toStringAsFixed(2)}'),
+        label: Row(
+          children: [
+            Icon(Icons.shopping_cart),
+            SizedBox(width: 10),
+            Text('Thanh toán: ${calculateTotalPrice().toStringAsFixed(0)}tr VND'),
+          ],
+        ),
         backgroundColor: primaryColor,
         foregroundColor: Colors.black,
         shape: RoundedRectangleBorder(
@@ -126,22 +120,36 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  void _increaseQuantity(Map<dynamic, dynamic> cartItem) {
-    if (cartItem.containsKey('key')) {
+  void _increaseQuantity(String productKey) {
+    var cartItem = cartItems.firstWhere((item) => item['key'] == productKey, orElse: () => {});
+    if (cartItem != null) {
       int newQuantity = cartItem['quantity'] + 1;
-      _updateQuantity(cartItem, newQuantity);
+      _userCartRef.child(cartItem['key']).update({
+        'quantity': newQuantity,
+      }).then((_) {
+        setState(() {
+          cartItem['quantity'] = newQuantity;
+        });
+      }).catchError((error) {
+        print('Lỗi cập nhật giỏ hàng: $error');
+      });
     }
   }
 
-  void _decreaseQuantity(Map<dynamic, dynamic> cartItem) {
-    int newQuantity = cartItem['quantity'] - 1;
-    _updateQuantity(cartItem, newQuantity);
-  }
-
-  void _updateQuantity(Map<dynamic, dynamic> cartItem, int newQuantity) {
-    _userCartRef.child(cartItem['key']!).update({
-      'quantity': newQuantity,
-    });
+  void _decreaseQuantity(String productKey) {
+    var cartItem = cartItems.firstWhere((item) => item['key'] == productKey, orElse: () => {});
+    if (cartItem != null && cartItem['quantity'] > 1) {
+      int newQuantity = cartItem['quantity'] - 1;
+      _userCartRef.child(cartItem['key']).update({
+        'quantity': newQuantity,
+      }).then((_) {
+        setState(() {
+          cartItem['quantity'] = newQuantity;
+        });
+      }).catchError((error) {
+        print('Lỗi cập nhật giỏ hàng: $error');
+      });
+    }
   }
 
 }
