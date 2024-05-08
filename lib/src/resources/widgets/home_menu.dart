@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app_car/src/account/account_page.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+import '../../address/address_page.dart';
 import '../../orders/order_page.dart';
 import '../../posts/post_page.dart';
 import '../../profile/profile.dart';
@@ -74,6 +76,24 @@ class _HomeMenuState extends State<HomeMenu> {
             },
             child: Text(
               "Bài viết",
+              style: TextStyle(fontSize: 18, color: Color(0xff323643)),
+            ),
+          ),
+        ),
+        ListTile(
+          leading: Icon(Icons.location_on, color: Colors.blue,),
+          title: TextButton(
+            onPressed: () {
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => StoreMapPage(
+                    storeName: 'Cửa hàng oto ICar',
+                    address: 'Ngõ 80/52 đường Xuân Phương, Nam Từ Liêm, Hà Nội',
+                    location: LatLng(21.047967323750214, 105.73427100970811),
+                )),
+              );
+            },
+            child: Text(
+              "Địa chỉ",
               style: TextStyle(fontSize: 18, color: Color(0xff323643)),
             ),
           ),

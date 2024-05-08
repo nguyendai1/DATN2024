@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_app_car/src/resources/widgets/home_menu.dart';
 
+import '../contact/contact_page.dart';
 import '../products/add_product.dart';
 import '../products/cart_page.dart';
 import '../products/product_detail_page.dart';
@@ -206,15 +207,33 @@ class _HomePageState extends State<HomePage> {
       drawer: Drawer(
         child: HomeMenu(isAdmin: isAdmin),
       ),
-      floatingActionButton: isAdmin
-          ? FloatingActionButton(
-        onPressed: () {
-          _goToAddProductPage();
-        },
-        child: Icon(Icons.add),
-        backgroundColor: primaryColor,
-      )
-          : null,
+      // floatingActionButton: isAdmin
+      //     ? FloatingActionButton(
+      //   onPressed: () {
+      //     _goToAddProductPage();
+      //   },
+      //   child: Icon(Icons.add),
+      //   backgroundColor: primaryColor,
+      // )
+      //     : null,
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            onPressed: _navigateToContactPage,
+            child: Icon(Icons.chat),
+            backgroundColor: primaryColor,
+          ),
+          SizedBox(height: 10), // Khoảng cách giữa 2 nút
+          if (isAdmin) // Hiển thị nút chỉ khi người dùng là admin
+            FloatingActionButton(
+              onPressed: _goToAddProductPage,
+              child: Icon(Icons.add),
+              backgroundColor: primaryColor,
+            ),
+        ],
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
     );
   }
 
@@ -241,6 +260,16 @@ class _HomePageState extends State<HomePage> {
       context,
       MaterialPageRoute(
         builder: (context) => CartPage(),
+      ),
+    );
+  }
+
+
+  void _navigateToContactPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ContactPage(), // Điều hướng tới trang liên hệ
       ),
     );
   }

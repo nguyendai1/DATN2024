@@ -20,6 +20,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   late DatabaseReference _productsRef;
   Map<dynamic, dynamic>? productData;
   List<String>? imageUrls;
+  int _currentPageIndex = 0;
 
   @override
   void initState() {
@@ -50,15 +51,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   Future<void> findSamePriceProducts() async {
     try {
       double currentProductPrice = productData!['price'].toDouble(); // Lấy giá sản phẩm hiện tại
-
       DatabaseReference productRef = FirebaseDatabase.instance.ref().child('products');
-
       // Lấy snapshot của dữ liệu từ cơ sở dữ liệu Firebase
       DataSnapshot snapshot = await productRef.once().then((event) => event.snapshot);
-
       // Lấy giá trị từ snapshot
       Map<dynamic, dynamic>? products = snapshot.value as Map<dynamic, dynamic>?;
-
       // Kiểm tra và thêm các sản phẩm có cùng giá vào danh sách samePriceProducts
       if (products != null) {
         products.forEach((key, value) {
@@ -79,13 +76,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10.0),
-          child: Text(
-            'Các sản phẩm cùng giá:',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-        ),
         ListView.builder(
           shrinkWrap: true,
           itemCount: samePriceProducts.length,
@@ -94,13 +84,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               title: Text(samePriceProducts[index]['name']),
               subtitle: Text('${samePriceProducts[index]['price']}tr VND'),
               leading: Image.network(
-                samePriceProducts[index]['imageUrls']?[0] ?? '', // Lấy ảnh đầu tiên trong danh sách ảnh
+                samePriceProducts[index]['imageUrls']?[0] ?? '',
                 fit: BoxFit.cover,
                 width: 60, // Kích thước của ảnh
                 height: 60,
               ),
               onTap: () {
-                // Điều hướng đến trang chi tiết sản phẩm của sản phẩm cùng giá
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -141,18 +130,42 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               if (imageUrls != null && imageUrls!.isNotEmpty)
-                SizedBox(
-                  width: double.infinity,
-                  height: 200,
-                  child: PageView.builder(
-                    itemCount: imageUrls!.length,
-                    itemBuilder: (context, index) {
-                      return Image.network(
-                        imageUrls![index],
-                        fit: BoxFit.cover,
-                      );
-                    },
-                  ),
+                Stack(
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      height: 200,
+                      child: PageView.builder(
+                        itemCount: imageUrls!.length,
+                        onPageChanged: (index) {
+                          setState(() {
+                            _currentPageIndex = index;
+                          });
+                        },
+                        itemBuilder: (context, index) {
+                          return Image.network(
+                            imageUrls![index],
+                            fit: BoxFit.cover,
+                          );
+                        },
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 10,
+                      right: 10,
+                      child: Container(
+                        padding: EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          '${_currentPageIndex + 1}/${imageUrls!.length}',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               Text('${productData!['name']}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
               Text('Giá: ${productData!['price']}tr VND', style: TextStyle(fontSize: 18),),
@@ -161,7 +174,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               Text('Số lượng: ${productData!['quantity']}', style: TextStyle(fontSize: 18),),
               Text('Tình trạng: ${productData!['status']}', style: TextStyle(fontSize: 18),),
               Text('Mô tả: ${productData!['description']}', style: TextStyle(fontSize: 18),),
-              buildSamePriceProducts(),
             ],
           ),
         ),
@@ -176,24 +188,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         child: Icon(Icons.add_shopping_cart),
         backgroundColor: primaryColor,
       ),
-      // floatingActionButton: ElevatedButton(
-      //   onPressed: () {
-      //     _addToCart();
-      //   },
-      //   child: Row(
-      //     mainAxisAlignment: MainAxisAlignment.center,
-      //     children: [
-      //       Icon(Icons.add_shopping_cart, color: Colors.white,),
-      //       SizedBox(width: 8),
-      //       Text('Thêm vào giỏ hàng', style: bold18White,),
-      //     ],
-      //   ),
-      //   style: ElevatedButton.styleFrom(
-      //     backgroundColor: primaryColor,
-      //     fixedSize: Size(280, 60),
-      //     alignment: Alignment.center,
-      //   ),
-      // ),
     );
   }
 
