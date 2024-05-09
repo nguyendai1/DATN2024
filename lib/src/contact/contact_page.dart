@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app_car/src/theme/theme.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class ContactPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Liên hệ', style: bold18White,),
-        backgroundColor: primaryColor,
+        title: Text('Liên hệ'),
       ),
       body: Center(
         child: Column(
@@ -16,35 +14,29 @@ class ContactPage extends StatelessWidget {
           children: [
             ElevatedButton.icon(
               onPressed: () {
-                _launchPhoneNumber('tel:0345758017');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ZaloWebView()),
+                );
               },
-              icon: Icon(Icons.phone),
+              icon: Icon(Icons.chat),
               label: Text(
-                'Gọi: 0345758017',
+                'Zalo',
                 style: TextStyle(fontSize: 18),
-              ),
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white, backgroundColor: Colors.green, padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
               ),
             ),
             SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: () {
-                _launchFacebook();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => FacebookWebView()),
+                );
               },
               icon: Icon(Icons.facebook),
               label: Text(
                 'Facebook',
                 style: TextStyle(fontSize: 18),
-              ),
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white, backgroundColor: Colors.blue, padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
               ),
             ),
           ],
@@ -52,16 +44,34 @@ class ContactPage extends StatelessWidget {
       ),
     );
   }
+}
 
-  void _launchPhoneNumber(String phoneNumber) async {
-    if (await canLaunch(phoneNumber)) {
-      await launch(phoneNumber);
-    } else {
-      print('Không thể gọi số điện thoại: $phoneNumber');
-    }
+class ZaloWebView extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Zalo'),
+      ),
+      body: WebView(
+        initialUrl: 'https://chat.zalo.me/',
+        // initialUrl: 'https://sandbox.vnpayment.vn/tryitnow/Home/CreateOrder',
+      ),
+    );
   }
+}
 
-  void _launchFacebook() async {
-    // Thêm mã nguồn mở trang Facebook ở đây nếu cần
+class FacebookWebView extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Facebook'),
+      ),
+      body: WebView(
+        initialUrl: 'https://m.facebook.com/profile.php?id=61559047570633/',
+        // initialUrl: 'https://sandbox.vnpayment.vn/tryitnow/Home/CreateOrder',
+      ),
+    );
   }
 }
