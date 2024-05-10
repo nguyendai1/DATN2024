@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_app_car/src/theme/theme.dart';
 
 class RegisteredUsersPage extends StatefulWidget {
@@ -76,23 +77,26 @@ class _RegisteredUsersPageState extends State<RegisteredUsersPage> {
         itemBuilder: (context, index) {
           return Column(
             children: [
-              ListTile(
-                title: Text(
-                  '${userNames[index]}',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+              Container(
+                color: index % 2 == 0 ? Colors.grey[200] : Colors.white,
+                child: ListTile(
+                  title: Text(
+                    '${userNames[index]}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
-                ),
-                subtitle: Text(
-                  '${userEmails[index]}',
-                  style: TextStyle(
-                    fontSize: 14,
+                  subtitle: Text(
+                    '${userEmails[index]}',
+                    style: TextStyle(
+                      fontSize: 14,
+                    ),
                   ),
-                ),
-                trailing: IconButton(
-                  icon: Icon(Icons.delete),
-                  onPressed: () => _deleteUser(index),
+                  trailing: IconButton(
+                    icon: Icon(Icons.delete),
+                    onPressed: () => _deleteUser(index),
+                  ),
                 ),
               ),
               Divider(

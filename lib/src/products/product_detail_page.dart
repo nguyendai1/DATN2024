@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_car/src/theme/theme.dart';
+import 'package:photo_view/photo_view.dart';
 
 import 'cart_page.dart';
 import 'edit_product.dart';
@@ -50,25 +51,22 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   Future<void> findSamePriceProducts() async {
     try {
-      double currentProductPrice = productData!['price'].toDouble(); // Lấy giá sản phẩm hiện tại
+      double currentProductPrice = productData!['price'].toDouble();
       DatabaseReference productRef = FirebaseDatabase.instance.ref().child('products');
-      // Lấy snapshot của dữ liệu từ cơ sở dữ liệu Firebase
       DataSnapshot snapshot = await productRef.once().then((event) => event.snapshot);
-      // Lấy giá trị từ snapshot
       Map<dynamic, dynamic>? products = snapshot.value as Map<dynamic, dynamic>?;
-      // Kiểm tra và thêm các sản phẩm có cùng giá vào danh sách samePriceProducts
       if (products != null) {
         products.forEach((key, value) {
-          double price = value['price'].toDouble(); // Lấy giá của sản phẩm từ dữ liệu Firebase
+          double price = value['price'].toDouble();
           if (price == currentProductPrice && key != widget.productKey) {
             setState(() {
-              samePriceProducts.add({...value, 'key': key}); // Lưu cả khóa và giá trị của sản phẩm
+              samePriceProducts.add({...value, 'key': key});
             });
           }
         });
       }
     } catch (error) {
-      print('Lỗi tìm sản phẩm cùng giá: $error');
+      print('Error finding same price products: $error');
     }
   }
 
@@ -86,7 +84,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               leading: Image.network(
                 samePriceProducts[index]['imageUrls']?[0] ?? '',
                 fit: BoxFit.cover,
-                width: 60, // Kích thước của ảnh
+                width: 60,
                 height: 60,
               ),
               onTap: () {
@@ -103,7 +101,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       ],
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -143,9 +140,17 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           });
                         },
                         itemBuilder: (context, index) {
-                          return Image.network(
-                            imageUrls![index],
-                            fit: BoxFit.cover,
+                          return GestureDetector(
+                            onTap: () {
+                              _showImageFullScreen(imageUrls![index]);
+                            },
+                            child: Hero(
+                              tag: 'product_image_${widget.productKey}_$index',
+                              child: Image.network(
+                                imageUrls![index],
+                                fit: BoxFit.cover,
+                              ),
+                            ),
                           );
                         },
                       ),
@@ -174,6 +179,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               Text('Số lượng: ${productData!['quantity']}', style: TextStyle(fontSize: 18),),
               Text('Tình trạng: ${productData!['status']}', style: TextStyle(fontSize: 18),),
               Text('Mô tả: ${productData!['description']}', style: TextStyle(fontSize: 18),),
+              if (samePriceProducts.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  child: Text(
+                    'Các sản phẩm cùng giá:',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              buildSamePriceProducts(),
             ],
           ),
         ),
@@ -226,12 +240,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             }
 
             if (isProductExistInCart) {
-              // Increase the quantity of the existing product in the cart
               cartRef.child(existingProductKey!).update({
                 'quantity': cartItems![existingProductKey]['quantity'] + 1,
               });
             } else {
-              // Add the product to the cart
               DatabaseReference productRef = cartRef.push();
               productRef.set({
                 'name': productData!['name'],
@@ -240,12 +252,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               });
             }
 
-            // Update the quantity of the product on the product detail page
             setState(() {
               productData!['quantity'] -= 1;
             });
 
-            // Navigate to the cart page
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -254,13 +264,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             );
           });
         } else {
-          // Show an alert if the product is out of stock
           showDialog(
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text('Out of Stock'),
-                content: Text('This product is currently out of stock.'),
+                title: Text('Hết hàng'),
+                content: Text('Sản phẩm này hiện đang hết hàng.'),
                 actions: [
                   TextButton(
                     onPressed: () {
@@ -275,7 +284,48 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         }
       }
     } catch (error) {
-      print('Error adding product to cart: $error');
+      print('Lỗi thêm sản phẩm vào giỏ hàng: $error');
     }
+  }
+
+  void _showImageFullScreen(String imageUrl) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          backgroundColor: Colors.black,
+          body: Stack(
+            children: [
+              Center(
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                  child: Hero(
+                    tag: 'product_image_${widget.productKey}_$_currentPageIndex',
+                    child: PhotoView(
+                      imageProvider: NetworkImage(imageUrl),
+                      minScale: PhotoViewComputedScale.contained * 0.8, // Phóng to tối thiểu
+                      maxScale: PhotoViewComputedScale.covered * 2.0, // Phóng to tối đa
+                      initialScale: PhotoViewComputedScale.contained, // Tỷ lệ ban đầu
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: MediaQuery.of(context).padding.top,
+                right: 0,
+                child: IconButton(
+                  icon: Icon(Icons.close, color: Colors.white),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
