@@ -484,7 +484,7 @@ class _HomePageState extends State<HomePage> {
                             padding:
                             const EdgeInsets.symmetric(horizontal: 8.0),
                             child: Text(
-                              'Giá: ${filteredProducts[index]['price'].toStringAsFixed(0)}tr VND',
+                              'Giá: ${filteredProducts[index]['price'].toStringAsFixed(0)} tr VND',
                               style: TextStyle(color: Colors.grey),
                             ),
                           ),

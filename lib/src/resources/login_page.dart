@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_car/src/resources/forgotpassword_page.dart';
 import 'package:flutter_app_car/src/resources/register_page.dart';
+import 'package:flutter_app_car/src/theme/theme.dart';
 
 import '../app.dart';
 import '../blocs/auth_bloc.dart';
@@ -89,7 +90,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: TextButton(
                     onPressed: () {
                       Navigator.push(
-                          context, MaterialPageRoute(builder: (context) => const ForgotPassPage())
+                          context, MaterialPageRoute(builder: (context) => ForgotPasswordPage())
                       );
                     },
                     child: Text(
@@ -111,8 +112,7 @@ class _LoginPageState extends State<LoginPage> {
                       style: TextStyle(color: Colors.white, fontSize: 18),
                     ),
                     style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(
-                          Color(0xff3277D8)),
+                      backgroundColor: MaterialStateProperty.all<Color>(primaryColor),
                     ),
                   ),
                 ),

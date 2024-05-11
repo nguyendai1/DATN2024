@@ -84,7 +84,7 @@ class _OrdersFromStatisticsPageState extends State<OrdersFromStatisticsPage> {
                   Text('Địa chỉ: ${transactions[realIndex]['address']}'),
                   Text('Số điện thoại: ${transactions[realIndex]['phone']}'),
                   Text(
-                    'Số tiền: ${transactions[realIndex]['amount']}tr VND',
+                    'Số tiền: ${transactions[realIndex]['amount']} tr VND',
                     style: TextStyle(
                       color: Colors.green,
                       fontWeight: FontWeight.bold,

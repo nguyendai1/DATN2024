@@ -62,7 +62,7 @@ class _CartPageState extends State<CartPage> {
           final cartItem = cartItems[index];
           return ListTile(
             title: Text(cartItem['name']),
-            subtitle: Text('${cartItem['price'].toString()}tr VND x ${cartItem['quantity']}'),
+            subtitle: Text('${cartItem['price'].toString()} tr VND x ${cartItem['quantity']}'),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -98,7 +98,7 @@ class _CartPageState extends State<CartPage> {
           children: [
             Icon(Icons.shopping_cart),
             SizedBox(width: 10),
-            Text('Thanh toán: ${calculateTotalPrice().toStringAsFixed(0)}tr VND'),
+            Text('Thanh toán: ${calculateTotalPrice().toStringAsFixed(0)} tr VND'),
           ],
         ),
         backgroundColor: primaryColor,

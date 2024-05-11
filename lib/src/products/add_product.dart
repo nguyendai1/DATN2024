@@ -19,6 +19,7 @@ class _AddProductPageState extends State<AddProductPage> {
   final TextEditingController _colorController = TextEditingController();
   final TextEditingController _brandController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
+  final TextEditingController _videoUrlController = TextEditingController();
 
   final DatabaseReference _productRef = FirebaseDatabase.instance.ref().child('products');
   List<Map<dynamic, dynamic>> _products = [];
@@ -85,6 +86,12 @@ class _AddProductPageState extends State<AddProductPage> {
               decoration: InputDecoration(labelText: 'Số lượng'),
               keyboardType: TextInputType.number,
             ),
+            SizedBox(height: 16),
+            TextFormField(
+              controller: _videoUrlController,
+              decoration: InputDecoration(labelText: 'Đường link video'),
+            ),
+
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
@@ -107,14 +114,17 @@ class _AddProductPageState extends State<AddProductPage> {
     String description = _descriptionController.text.trim();
     String color = _colorController.text.trim();
     String brand = _brandController.text.trim();
+    String videoUrl = _videoUrlController.text.trim();
     int quantity = int.tryParse(_quantityController.text.trim()) ?? 0;
+    String datePosted = DateTime.now().toString();
 
     if (name.isNotEmpty &&
         imageUrls.isNotEmpty &&
         status.isNotEmpty &&
         description.isNotEmpty &&
         color.isNotEmpty &&
-        brand.isNotEmpty) {
+        brand.isNotEmpty &&
+        videoUrl.isNotEmpty) {
       Map<String, dynamic> productData = {
         'name': name,
         'imageUrls': imageUrls,
@@ -124,6 +134,8 @@ class _AddProductPageState extends State<AddProductPage> {
         'color': color,
         'brand': brand,
         'quantity': quantity,
+        'datePosted': datePosted,
+        'videoUrl': videoUrl,
       };
 
       _productRef.push().set(productData).then((value) {

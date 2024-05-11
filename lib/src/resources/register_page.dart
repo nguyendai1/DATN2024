@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app_car/src/resources/dialog/loading_dialog.dart';
 import 'package:flutter_app_car/src/resources/dialog/msg_dialog.dart';
+import 'package:flutter_app_car/src/theme/theme.dart';
 
 import '../blocs/auth_bloc.dart';
 import 'home_page.dart';
@@ -164,7 +165,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         style: TextStyle(color: Colors.white, fontSize: 18),
                       ),
                       style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all<Color>(Color(0xff3277D8)),
+                        backgroundColor: MaterialStateProperty.all<Color>(primaryColor),
                       ),
                     ),
                   ),
