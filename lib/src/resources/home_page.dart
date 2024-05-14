@@ -501,24 +501,24 @@ class _HomePageState extends State<HomePage> {
       drawer: Drawer(
         child: HomeMenu(isAdmin: isAdmin),
       ),
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            onPressed: _navigateToContactPage,
-            child: Icon(Icons.chat),
-            backgroundColor: primaryColor,
-          ),
-          SizedBox(height: 10), // Khoảng cách giữa 2 nút
+      // floatingActionButton: Column(
+      //   mainAxisAlignment: MainAxisAlignment.end,
+      //   children: [
+      //     FloatingActionButton(
+      //       onPressed: _navigateToContactPage,
+      //       child: Icon(Icons.chat),
+      //       backgroundColor: primaryColor,
+      //     ),
+      //     SizedBox(height: 10), // Khoảng cách giữa 2 nút
           // if (isAdmin) // Hiển thị nút chỉ khi người dùng là admin
           //   FloatingActionButton(
           //     onPressed: _goToAddProductPage,
           //     child: Icon(Icons.add),
           //     backgroundColor: primaryColor,
           //   ),
-        ],
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+    //     ],
+    //   ),
+    //   floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
     );
   }
 
