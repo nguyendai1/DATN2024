@@ -510,12 +510,12 @@ class _HomePageState extends State<HomePage> {
             backgroundColor: primaryColor,
           ),
           SizedBox(height: 10), // Khoảng cách giữa 2 nút
-          if (isAdmin) // Hiển thị nút chỉ khi người dùng là admin
-            FloatingActionButton(
-              onPressed: _goToAddProductPage,
-              child: Icon(Icons.add),
-              backgroundColor: primaryColor,
-            ),
+          // if (isAdmin) // Hiển thị nút chỉ khi người dùng là admin
+          //   FloatingActionButton(
+          //     onPressed: _goToAddProductPage,
+          //     child: Icon(Icons.add),
+          //     backgroundColor: primaryColor,
+          //   ),
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
@@ -531,14 +531,14 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _goToAddProductPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AddProductPage(),
-      ),
-    );
-  }
+  // void _goToAddProductPage() {
+  //   Navigator.push(
+  //     context,
+  //     MaterialPageRoute(
+  //       builder: (context) => AddProductPage(),
+  //     ),
+  //   );
+  // }
 
   void _navigateToCartPage() {
     Navigator.push(

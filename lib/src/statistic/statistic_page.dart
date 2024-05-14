@@ -332,7 +332,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
                 }).toList(),
               ),
               SizedBox(height: 20),
-              _buildBarChart(), // Đặt biểu đồ trước danh sách đơn hàng
+              _buildBarChart(),
               SizedBox(height: 20),
               Text(
                 'Đơn hàng đã bán: $totalTransactions',
@@ -379,10 +379,8 @@ class _StatisticsPageState extends State<StatisticsPage> {
     List<Transaction> filteredTransactions =
     filterTransactionsByMonth(selectedMonth);
 
-    // Tạo một Map để lưu trữ tổng số tiền cho mỗi phương thức thanh toán
     Map<String, double> paymentAmounts = {};
 
-    // Tính tổng số tiền cho mỗi phương thức thanh toán
     for (var transaction in filteredTransactions) {
       if (!paymentAmounts.containsKey(transaction.paymentMethod)) {
         paymentAmounts[transaction.paymentMethod] = transaction.amount;
@@ -392,7 +390,6 @@ class _StatisticsPageState extends State<StatisticsPage> {
       }
     }
 
-    // Tạo danh sách series từ Map
     List<charts.Series<dynamic, String>> seriesList = [];
     paymentAmounts.forEach((paymentMethod, amount) {
       seriesList.add(

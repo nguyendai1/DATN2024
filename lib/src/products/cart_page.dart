@@ -61,8 +61,9 @@ class _CartPageState extends State<CartPage> {
         itemBuilder: (context, index) {
           final cartItem = cartItems[index];
           return ListTile(
-            title: Text(cartItem['name']),
-            subtitle: Text('${cartItem['price'].toString()} tr VND x ${cartItem['quantity']}'),
+            leading: Image.network(cartItems[index]['imageUrls'] ?? '', width: 70, height: 70,),
+            title: Text(cartItem['name'], style: TextStyle(fontWeight: FontWeight.bold),),
+            subtitle: Text('${cartItem['price'].toString()} tr VND\nSố lượng: ${cartItem['quantity']}'),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -76,7 +77,7 @@ class _CartPageState extends State<CartPage> {
                 IconButton(
                   icon: Icon(Icons.add),
                   onPressed: () {
-                    _increaseQuantity(cartItem['key']);
+                    _increaseQuantity(cartItem['name']);
                   },
                 ),
                 IconButton(
@@ -120,21 +121,23 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  void _increaseQuantity(String productKey) {
-    var cartItem = cartItems.firstWhere((item) => item['key'] == productKey, orElse: () => {});
-    if (cartItem != null) {
-      int newQuantity = cartItem['quantity'] + 1;
-      _userCartRef.child(cartItem['key']).update({
+  void _increaseQuantity(String productName) {
+    var cartItemIndex = cartItems.indexWhere((item) => item['name'] == productName);
+    if (cartItemIndex != -1) {
+      int newQuantity = cartItems[cartItemIndex]['quantity'] + 1;
+      String productKey = cartItems[cartItemIndex]['key']; // Lấy key của sản phẩm
+      _userCartRef.child(productKey).update({
         'quantity': newQuantity,
       }).then((_) {
         setState(() {
-          cartItem['quantity'] = newQuantity;
+          cartItems[cartItemIndex]['quantity'] = newQuantity;
         });
       }).catchError((error) {
         print('Lỗi cập nhật giỏ hàng: $error');
       });
     }
   }
+
 
   void _decreaseQuantity(String productKey) {
     var cartItem = cartItems.firstWhere((item) => item['key'] == productKey, orElse: () => {});

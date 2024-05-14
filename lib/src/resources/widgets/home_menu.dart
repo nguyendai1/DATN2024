@@ -5,6 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../address/address_page.dart';
 import '../../orders/order_page.dart';
 import '../../posts/post_page.dart';
+import '../../products/product_management.dart';
 import '../../profile/profile.dart';
 import '../../statistic/statistic_page.dart';
 import '../login_page.dart';
@@ -36,6 +37,21 @@ class _HomeMenuState extends State<HomeMenu> {
               ),
             )
         ),
+        if (widget.isAdmin)
+          ListTile(
+            leading: Icon(Icons.directions_car, color: Colors.blue,),
+            title: TextButton(
+              onPressed: () {
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => ProductManagementPage())
+                );
+              },
+              child: Text(
+                "Quản lý xe",
+                style: TextStyle(fontSize: 18, color: Color(0xff323643)),
+              ),
+            ),
+          ),
         if (widget.isAdmin)
           ListTile(
             leading: Icon(Icons.supervised_user_circle, color: Colors.blue,),

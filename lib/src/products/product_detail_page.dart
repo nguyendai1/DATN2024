@@ -732,6 +732,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 'name': productData!['name'],
                 'price': productData!['price'],
                 'quantity': 1,
+                'imageUrls': productData!['imageUrls'][0],
               });
             }
 
