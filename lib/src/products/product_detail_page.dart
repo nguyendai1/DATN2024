@@ -697,6 +697,80 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
+  // void _addToCart() {
+  //   FirebaseAuth auth = FirebaseAuth.instance;
+  //   DatabaseReference cartRef = FirebaseDatabase.instance.ref().child('carts').child(auth.currentUser!.uid);
+  //
+  //   try {
+  //     if (productData != null) {
+  //       int quantity = productData!['quantity'];
+  //
+  //       if (quantity > 0) {
+  //         bool isProductExistInCart = false;
+  //         String? existingProductKey;
+  //
+  //         cartRef.once().then((DatabaseEvent event) {
+  //           DataSnapshot snapshot = event.snapshot;
+  //           Map<dynamic, dynamic>? cartItems = snapshot.value as Map?;
+  //
+  //           if (cartItems != null) {
+  //             cartItems.forEach((key, value) {
+  //               if (value['name'] == productData!['name']) {
+  //                 existingProductKey = key;
+  //                 isProductExistInCart = true;
+  //               }
+  //             });
+  //           }
+  //
+  //           if (isProductExistInCart) {
+  //             cartRef.child(existingProductKey!).update({
+  //               'quantity': cartItems![existingProductKey]['quantity'] + 1,
+  //             });
+  //           } else {
+  //             DatabaseReference productRef = cartRef.push();
+  //             productRef.set({
+  //               'name': productData!['name'],
+  //               'price': productData!['price'],
+  //               'quantity': 1,
+  //               'imageUrls': productData!['imageUrls'][0],
+  //             });
+  //           }
+  //
+  //           setState(() {
+  //             productData!['quantity'] -= 1;
+  //           });
+  //
+  //           Navigator.push(
+  //             context,
+  //             MaterialPageRoute(
+  //               builder: (context) => CartPage(),
+  //             ),
+  //           );
+  //         });
+  //       } else {
+  //         showDialog(
+  //           context: context,
+  //           builder: (BuildContext context) {
+  //             return AlertDialog(
+  //               title: Text('Hết hàng'),
+  //               content: Text('Sản phẩm này hiện đang hết hàng.'),
+  //               actions: [
+  //                 TextButton(
+  //                   onPressed: () {
+  //                     Navigator.of(context).pop();
+  //                   },
+  //                   child: Text('OK'),
+  //                 ),
+  //               ],
+  //             );
+  //           },
+  //         );
+  //       }
+  //     }
+  //   } catch (error) {
+  //     print('Lỗi thêm sản phẩm vào giỏ hàng: $error');
+  //   }
+  // }
   void _addToCart() {
     FirebaseAuth auth = FirebaseAuth.instance;
     DatabaseReference cartRef = FirebaseDatabase.instance.ref().child('carts').child(auth.currentUser!.uid);
@@ -725,6 +799,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             if (isProductExistInCart) {
               cartRef.child(existingProductKey!).update({
                 'quantity': cartItems![existingProductKey]['quantity'] + 1,
+              }).then((_) {
+                _updateProductQuantity();
               });
             } else {
               DatabaseReference productRef = cartRef.push();
@@ -733,43 +809,57 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 'price': productData!['price'],
                 'quantity': 1,
                 'imageUrls': productData!['imageUrls'][0],
+              }).then((_) {
+                _updateProductQuantity();
               });
             }
-
-            setState(() {
-              productData!['quantity'] -= 1;
-            });
-
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => CartPage(),
-              ),
-            );
           });
         } else {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text('Hết hàng'),
-                content: Text('Sản phẩm này hiện đang hết hàng.'),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Text('OK'),
-                  ),
-                ],
-              );
-            },
-          );
+          _showOutOfStockDialog();
         }
       }
     } catch (error) {
-      print('Lỗi thêm sản phẩm vào giỏ hàng: $error');
+      print('Error adding product to cart: $error');
     }
+  }
+
+  void _showOutOfStockDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Hết hàng'),
+          content: Text('Sản phẩm này hiện đang hết hàng.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _updateProductQuantity() {
+    setState(() {
+      productData!['quantity'] -= 1;
+    });
+
+    _productsRef.child(widget.productKey).update({
+      'quantity': productData!['quantity']
+    }).then((_) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CartPage(),
+        ),
+      );
+    }).catchError((error) {
+      print('Error updating product quantity: $error');
+    });
   }
 
   void _showImageFullScreen(String imageUrl) {

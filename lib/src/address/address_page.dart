@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_app_car/src/theme/theme.dart';
@@ -22,68 +23,86 @@ class StoreMapPage extends StatelessWidget {
         title: Text('Địa chỉ', style: bold18White,),
         backgroundColor: primaryColor,
       ),
-      body: Stack(
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      storeName,
-                      style: TextStyle(
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Địa chỉ: $address',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontStyle: FontStyle.italic,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: GoogleMap(
-                  initialCameraPosition: CameraPosition(
-                    target: location,
-                    zoom: 15,
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  storeName,
+                  style: TextStyle(
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
                   ),
-                  markers: {
-                    Marker(
-                      markerId: MarkerId('store_location'),
-                      position: location,
-                      infoWindow: InfoWindow(
-                        title: storeName,
-                        snippet: address,
-                      ),
-                    ),
-                  },
                 ),
-              ),
-            ],
-          ),
-          Positioned(
-            bottom: 16,
-            left: 16,
-            child: FloatingActionButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => FacebookWebView()),
-                );
-              },
-              child: Icon(Icons.facebook),
+                SizedBox(height: 8),
+                Text(
+                  'Địa chỉ: $address',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.grey,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Google map',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
           ),
+          Expanded(
+            child: Container(
+              height: 400,
+              child: GoogleMap(
+                initialCameraPosition: CameraPosition(
+                  target: location,
+                  zoom: 15,
+                ),
+                markers: {
+                  Marker(
+                    markerId: MarkerId('store_location'),
+                    position: location,
+                    infoWindow: InfoWindow(
+                      title: storeName,
+                      snippet: address,
+                    ),
+                  ),
+                },
+              ),
+            ),
+          ),
+          SizedBox(height: 20,),
+          Container(
+            color: primaryColor,
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text('Liên hệ: (+84) 345758017',style: bold18White,),
+                SizedBox(width: 30,),
+                Align(
+                  child: FloatingActionButton(
+                    backgroundColor: Colors.blue,
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => FacebookWebView()),
+                      );
+                    },
+                    child: Icon(Icons.facebook),
+                  ),
+                ),
+              ],
+            ),
+          )
         ],
       ),
     );

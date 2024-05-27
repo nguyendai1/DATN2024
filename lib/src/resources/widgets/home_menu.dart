@@ -5,6 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../address/address_page.dart';
 import '../../orders/order_page.dart';
 import '../../posts/post_page.dart';
+import '../../products/brand_page.dart';
 import '../../products/product_management.dart';
 import '../../profile/profile.dart';
 import '../../statistic/statistic_page.dart';
@@ -109,7 +110,7 @@ class _HomeMenuState extends State<HomeMenu> {
               );
             },
             child: Text(
-              "Địa chỉ",
+              "Địa chỉ và liên hệ",
               style: TextStyle(fontSize: 18, color: Color(0xff323643)),
             ),
           ),
