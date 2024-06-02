@@ -43,25 +43,72 @@ class _RegisteredUsersPageState extends State<RegisteredUsersPage> {
     }
   }
 
+  // Future<void> _deleteUser(int index) async {
+  //   try {
+  //     DatabaseReference usersRef = FirebaseDatabase.instance.ref().child('users');
+  //     usersRef.once().then((DatabaseEvent event) {
+  //       if (event.snapshot.value != null) {
+  //         Map<dynamic, dynamic> users = (event.snapshot.value as Map<dynamic, dynamic>);
+  //         String userId = users.keys.elementAt(index);
+  //         usersRef.child(userId).remove().then((_) {
+  //           setState(() {
+  //             userEmails.removeAt(index);
+  //             userNames.removeAt(index);
+  //           });
+  //         });
+  //       }
+  //     });
+  //   } catch (error) {
+  //     print('Error deleting user: $error');
+  //   }
+  // }
   Future<void> _deleteUser(int index) async {
     try {
-      DatabaseReference usersRef = FirebaseDatabase.instance.ref().child('users');
-      usersRef.once().then((DatabaseEvent event) {
-        if (event.snapshot.value != null) {
-          Map<dynamic, dynamic> users = (event.snapshot.value as Map<dynamic, dynamic>);
-          String userId = users.keys.elementAt(index);
-          usersRef.child(userId).remove().then((_) {
-            setState(() {
-              userEmails.removeAt(index);
-              userNames.removeAt(index);
+      // Show confirmation dialog
+      bool confirmDelete = await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Xác nhận'),
+            content: Text('Bạn có chắc chắn muốn xóa người dùng này?'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(true); // Return true if confirmed
+                },
+                child: Text('OK'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(false); // Return false if canceled
+                },
+                child: Text('Cancel'),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (confirmDelete == true) {
+        DatabaseReference usersRef = FirebaseDatabase.instance.ref().child('users');
+        usersRef.once().then((DatabaseEvent event) {
+          if (event.snapshot.value != null) {
+            Map<dynamic, dynamic> users = (event.snapshot.value as Map<dynamic, dynamic>);
+            String userId = users.keys.elementAt(index);
+            usersRef.child(userId).remove().then((_) {
+              setState(() {
+                userEmails.removeAt(index);
+                userNames.removeAt(index);
+              });
             });
-          });
-        }
-      });
+          }
+        });
+      }
     } catch (error) {
       print('Error deleting user: $error');
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

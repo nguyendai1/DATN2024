@@ -84,6 +84,20 @@ class _HomeMenuState extends State<HomeMenu> {
             ),
           ),
         ListTile(
+            leading: Icon(Icons.directions_car, color: Colors.blue,),
+            title: TextButton(
+              onPressed: () {
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => ProductBrandPage())
+                );
+              },
+              child: Text(
+                "Danh mục xe",
+                style: TextStyle(fontSize: 18, color: Color(0xff323643)),
+              ),
+            )
+        ),
+        ListTile(
           leading: Icon(Icons.article_outlined, color: Colors.blue,),
           title: TextButton(
             onPressed: () {

@@ -232,6 +232,7 @@ class _PaymentPageState extends State<PaymentPage> {
 }
 
 class PayWebView extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

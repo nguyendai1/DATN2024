@@ -37,18 +37,58 @@ class _OrdersFromStatisticsPageState extends State<OrdersFromStatisticsPage> {
     }
   }
 
+  // Future<void> _deleteTransaction(String transactionKey) async {
+  //   try {
+  //     DatabaseReference statisticsRef = FirebaseDatabase.instance.ref().child('transactions');
+  //     statisticsRef.child(transactionKey).remove().then((_) {
+  //       setState(() {
+  //         transactions.removeWhere((transaction) => transaction['key'] == transactionKey);
+  //       });
+  //     });
+  //   } catch (error) {
+  //     print('Error deleting transaction: $error');
+  //   }
+  // }
   Future<void> _deleteTransaction(String transactionKey) async {
     try {
-      DatabaseReference statisticsRef = FirebaseDatabase.instance.ref().child('transactions');
-      statisticsRef.child(transactionKey).remove().then((_) {
-        setState(() {
-          transactions.removeWhere((transaction) => transaction['key'] == transactionKey);
+      // Show confirmation dialog
+      bool confirmDelete = await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Xác nhận'),
+            content: Text('Bạn có chắc chắn muốn xóa đơn hàng này?'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(true); // Return true if confirmed
+                },
+                child: Text('OK'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(false); // Return false if canceled
+                },
+                child: Text('Cancel'),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (confirmDelete == true) {
+        DatabaseReference statisticsRef = FirebaseDatabase.instance.ref().child('transactions');
+        statisticsRef.child(transactionKey).remove().then((_) {
+          setState(() {
+            transactions.removeWhere((transaction) => transaction['key'] == transactionKey);
+          });
         });
-      });
+      }
     } catch (error) {
       print('Error deleting transaction: $error');
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

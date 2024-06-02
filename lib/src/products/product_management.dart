@@ -53,19 +53,59 @@ class _ProductManagementPageState extends State<ProductManagementPage> {
     });
   }
 
+  // Future<void> _deleteProduct(String productKey) async {
+  //   try {
+  //     DatabaseReference productsRef = FirebaseDatabase.instance.ref().child('products');
+  //     productsRef.child(productKey).remove().then((_) {
+  //       setState(() {
+  //         products.removeWhere((product) => product['key'] == productKey);
+  //         _filterProducts();
+  //       });
+  //     });
+  //   } catch (error) {
+  //     print('Error deleting product: $error');
+  //   }
+  // }
   Future<void> _deleteProduct(String productKey) async {
     try {
-      DatabaseReference productsRef = FirebaseDatabase.instance.ref().child('products');
-      productsRef.child(productKey).remove().then((_) {
+      // Show confirmation dialog
+      bool confirmDelete = await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Xác nhận'),
+            content: Text('Bạn có chắc chắn muốn xóa sản phẩm này?'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(true); // Return true if confirmed
+                },
+                child: Text('OK'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(false); // Return false if canceled
+                },
+                child: Text('Cancel'),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (confirmDelete == true) {
+        DatabaseReference productsRef = FirebaseDatabase.instance.ref().child('products');
+        await productsRef.child(productKey).remove();
         setState(() {
           products.removeWhere((product) => product['key'] == productKey);
           _filterProducts();
         });
-      });
+      }
     } catch (error) {
       print('Error deleting product: $error');
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
